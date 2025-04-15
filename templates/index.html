@@ -1,29 +1,73 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Housing Price Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Housing Price Prediction</title>
 </head>
 <body>
-    <h2>Enter Housing Details</h2>
-    <form action="/predict" method="post">
-        Area: <input type="text" name="area"><br>
-        Bedrooms: <input type="text" name="bedrooms"><br>
-        Bathrooms: <input type="text" name="bathrooms"><br>
-        Stories: <input type="text" name="stories"><br>
-        Main Road (yes/no): <input type="text" name="mainroad"><br>
-        Guest Room (yes/no): <input type="text" name="guestroom"><br>
-        Basement (yes/no): <input type="text" name="basement"><br>
-        Hot Water Heating (yes/no): <input type="text" name="hotwaterheating"><br>
-        Air Conditioning (yes/no): <input type="text" name="airconditioning"><br>
-        Parking: <input type="text" name="parking"><br>
-        Preferred Area (yes/no): <input type="text" name="prefarea"><br>
-        Furnishing Status (unfurnished/semi-furnished/furnished): <input type="text" name="furnishingstatus"><br>
-        <input type="submit" value="Predict">
+    <h1>Housing Price Prediction</h1>
+    <form id="predict-form">
+        <label for="area">Area (sq ft):</label>
+        <input type="number" id="area" name="area" required><br><br>
+
+        <label for="bedrooms">Bedrooms:</label>
+        <input type="number" id="bedrooms" name="bedrooms" required><br><br>
+
+        <label for="bathrooms">Bathrooms:</label>
+        <input type="number" id="bathrooms" name="bathrooms" required><br><br>
+
+        <label for="stories">Stories:</label>
+        <input type="number" id="stories" name="stories" required><br><br>
+
+        <label for="parking">Parking:</label>
+        <input type="number" id="parking" name="parking" required><br><br>
+
+        <label for="furnishingstatus">Furnishing Status:</label>
+        <select id="furnishingstatus" name="furnishingstatus" required>
+            <option value="furnished">Furnished</option>
+            <option value="semi-furnished">Semi-furnished</option>
+            <option value="unfurnished">Unfurnished</option>
+        </select><br><br>
+
+        <button type="submit">Predict</button>
     </form>
-    {% if prediction_text %}
-        <h3>{{ prediction_text }}</h3>
-    {% endif %}
+
+    <div id="prediction-result"></div>
+
+    <script>
+        document.getElementById("predict-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            const data = {
+                area: formData.get("area"),
+                bedrooms: formData.get("bedrooms"),
+                bathrooms: formData.get("bathrooms"),
+                stories: formData.get("stories"),
+                parking: formData.get("parking"),
+                furnishingstatus: formData.get("furnishingstatus"),
+                mainroad: 1, 
+                guestroom: 0, 
+                basement: 0, 
+                hotwaterheating: 1,
+                airconditioning: 1
+            };
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("prediction-result").innerHTML = `
+                    Predicted Price: ₹${data.predicted_price.toFixed(2)}
+                `;
+            });
+        });
+    </script>
 </body>
 </html>
