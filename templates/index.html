@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Housing Price Predictor</title>
+</head>
+<body>
+    <h2>Enter Housing Details</h2>
+    <form action="/predict" method="post">
+        Area: <input type="text" name="area"><br>
+        Bedrooms: <input type="text" name="bedrooms"><br>
+        Bathrooms: <input type="text" name="bathrooms"><br>
+        Stories: <input type="text" name="stories"><br>
+        Main Road (yes/no): <input type="text" name="mainroad"><br>
+        Guest Room (yes/no): <input type="text" name="guestroom"><br>
+        Basement (yes/no): <input type="text" name="basement"><br>
+        Hot Water Heating (yes/no): <input type="text" name="hotwaterheating"><br>
+        Air Conditioning (yes/no): <input type="text" name="airconditioning"><br>
+        Parking: <input type="text" name="parking"><br>
+        Preferred Area (yes/no): <input type="text" name="prefarea"><br>
+        Furnishing Status (unfurnished/semi-furnished/furnished): <input type="text" name="furnishingstatus"><br>
+        <input type="submit" value="Predict">
+    </form>
+    {% if prediction_text %}
+        <h3>{{ prediction_text }}</h3>
+    {% endif %}
+</body>
+</html>
