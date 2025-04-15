@@ -1,42 +1,42 @@
-
+import os
+from flask import Flask, request, jsonify
 import pickle
 import numpy as np
-from flask import Flask, request, render_template
 
 app = Flask(__name__)
-import joblib  
-model = joblib.load('housing_price_model.pkl')
 
+model = pickle.load(open('housing_price_model.pkl', 'rb'))
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return "Welcome to the Housing Price Prediction App!"
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.form
-    area = float(data['area'])
-    bedrooms = int(data['bedrooms'])
-    bathrooms = int(data['bathrooms'])
-    stories = int(data['stories'])
-    mainroad = 1 if data.get('mainroad') == 'yes' else 0
-    guestroom = 1 if data.get('guestroom') == 'yes' else 0
-    basement = 1 if data.get('basement') == 'yes' else 0
-    hotwaterheating = 1 if data.get('hotwaterheating') == 'yes' else 0
-    airconditioning = 1 if data.get('airconditioning') == 'yes' else 0
-    parking = int(data['parking'])
+    data = request.get_json()
 
-    furnishing_map = {'unfurnished': 0, 'semi-furnished': 1, 'furnished': 2}
-    furnishingstatus = furnishing_map[data['furnishingstatus'].lower()]
+    area = data['area']
+    bedrooms = data['bedrooms']
+    bathrooms = data['bathrooms']
+    stories = data['stories']
+    parking = data['parking']
+    furnishingstatus = data['furnishingstatus']
+    mainroad = data['mainroad']
+    guestroom = data['guestroom']
+    basement = data['basement']
+    hotwaterheating = data['hotwaterheating']
+    airconditioning = data['airconditioning']
 
-    preferred_map = {'no': 0, 'yes': 1}
-    prefarea = preferred_map[data['prefarea'].lower()]
+    features = np.array([[area, bedrooms, bathrooms, stories, parking,
+                          furnishingstatus, mainroad, guestroom, basement, hotwaterheating, airconditioning]])
 
-    input_data = np.array([[area, bedrooms, bathrooms, stories, mainroad,
-                            guestroom, basement, hotwaterheating,
-                            airconditioning, parking, prefarea, furnishingstatus]])
-    prediction = model.predict(input_data)[0]
-    return render_template('index.html', prediction_text=f'Predicted Price: ₹{int(prediction):,}')
+    prediction = model.predict(features)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    predicted_price = np.expm1(prediction[0])
+
+    return jsonify({'predicted_price': predicted_price})
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(host="0.0.0.0", port=port, debug=True)
