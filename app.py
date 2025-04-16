@@ -7,6 +7,8 @@ app = Flask(__name__)
 
 model = pickle.load(open('housing_price_model.pkl', 'rb'))
 
+furnishingstatus_mapping = {'furnished': 1, 'semi-furnished': 2, 'unfurnished': 0}
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -23,12 +25,20 @@ def predict():
         parking = float(data['parking'])
         furnishingstatus = data['furnishingstatus']
 
-        furnishingstatus_mapping = {'furnished': 1, 'semi-furnished': 2, 'unfurnished': 0}
         furnishingstatus = furnishingstatus_mapping.get(furnishingstatus, 0)  
 
         features = np.array([[area, bedrooms, bathrooms, stories, parking, furnishingstatus]])
 
-        prediction = model.predict(features)
+        numeric_features = [area, bedrooms, bathrooms, stories, parking]
+        scaler = model.named_steps['preprocessor'].transformers_[0][1]
+        scaled_numeric_features = scaler.transform([numeric_features])
+
+        encoder = model.named_steps['preprocessor'].transformers_[1][1]
+        encoded_furnishingstatus = encoder.transform([[furnishingstatus]]).toarray()
+
+        preprocessed_features = np.concatenate([scaled_numeric_features, encoded_furnishingstatus], axis=1)
+
+        prediction = model.predict(preprocessed_features)
 
         predicted_price = np.expm1(prediction[0])
 
